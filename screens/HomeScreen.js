@@ -6,12 +6,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
 const HomeScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -26,7 +28,6 @@ const HomeScreen = ({ navigation }) => {
       const data = await AsyncStorage.getItem("products");
       if (data) {
         const parsedData = JSON.parse(data);
-        // Sort the products by name in ascending order
         const sortedProducts = parsedData.sort((a, b) =>
           a.name.localeCompare(b.name)
         );
@@ -34,41 +35,51 @@ const HomeScreen = ({ navigation }) => {
       }
     } catch (e) {
       console.error("Failed to load products", e);
+      Alert.alert("Error", "Failed to load products");
     }
   };
 
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const renderItem = ({ item }) => (
-    <View style={styles.productCard}>
-      <Text style={styles.productName}>{item.name}</Text>
-
-      <View style={styles.infoContainer}>
-        <View style={styles.infoBox}>
-          <Text style={styles.infoLabel}>Price</Text>
-          <Text style={styles.infoValue}>₵{item.price}</Text>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("ProductDetail", { product: item })}
+    >
+      <View style={styles.productCard}>
+        <Text style={styles.productName}>{item.name}</Text>
+        <View style={styles.infoContainer}>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Price</Text>
+            <Text style={styles.infoValue}>₵{item.price}</Text>
+          </View>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoLabel}>Qty</Text>
+            <Text style={styles.infoValue}>{item.quantity}</Text>
+          </View>
         </View>
-        <View style={styles.infoBox}>
-          <Text style={styles.infoLabel}>Qty</Text>
-          <Text style={styles.infoValue}>{item.quantity}</Text>
-        </View>
+        <TouchableOpacity style={styles.plusButton}>
+          <Text style={styles.plusButtonText}>+</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity style={styles.plusButton}>
-        <Text style={styles.plusButtonText}>+</Text>
-      </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      {/* Search Box */}
       <View style={styles.searchContainer}>
-        <TextInput placeholder="Search..." style={styles.searchInput} />
+        <TextInput
+          placeholder="Search products..."
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
         <TouchableOpacity style={styles.searchButton}>
           <Ionicons name="search" size={20} color="white" />
         </TouchableOpacity>
       </View>
 
-      {/* Info Cards */}
       <View style={styles.cardsContainer}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Sales</Text>
@@ -96,12 +107,13 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Product List */}
       <FlatList
-        data={products}
+        data={filteredProducts}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        ListEmptyComponent={<Text>No products yet.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No products found</Text>
+        }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
     </View>
@@ -213,6 +225,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#fff",
     fontWeight: "bold",
+  },
+  emptyText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: "#888",
   },
 });
 

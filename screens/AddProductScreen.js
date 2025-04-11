@@ -7,10 +7,11 @@ import {
   Alert,
   Image,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
-import { Ionicons } from "@expo/vector-icons"; // Import Ionicons
+import { Ionicons } from "@expo/vector-icons";
 
 const uuidv4 = () => {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -60,9 +61,9 @@ const AddProductScreen = ({ navigation }) => {
       name: name.trim(),
       price: parseFloat(price),
       quantity: parseInt(quantity),
-      ...(category && { category: category.trim() }), // Only include if not empty
-      ...(details && { details: details.trim() }), // Only include if not empty
-      image: imageUri || null, // Store null if no image
+      ...(category && { category: category.trim() }),
+      ...(details && { details: details.trim() }),
+      image: imageUri || null,
       createdAt: new Date().toISOString(),
     };
 
@@ -73,16 +74,16 @@ const AddProductScreen = ({ navigation }) => {
       products.push(newProduct);
       await AsyncStorage.setItem("products", JSON.stringify(products));
 
-      Alert.alert("Saved!", "Product has been saved successfully.");
+      Alert.alert("Success", "Product has been saved successfully");
       navigation.goBack();
     } catch (error) {
       console.error("Error saving product:", error);
-      Alert.alert("Error", "Failed to save product.");
+      Alert.alert("Error", "Failed to save product");
     }
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.imageDouble}>
         <TouchableOpacity style={styles.imageContainer} onPress={selectImage}>
           {imageUri ? (
@@ -90,7 +91,7 @@ const AddProductScreen = ({ navigation }) => {
           ) : (
             <View style={styles.placeholderContainer}>
               <Ionicons name="image-outline" size={50} color="#ccc" />
-              <Text style={styles.placeholderText}>Add image</Text>
+              <Text style={styles.placeholderText}>Add product image</Text>
             </View>
           )}
         </TouchableOpacity>
@@ -100,7 +101,7 @@ const AddProductScreen = ({ navigation }) => {
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="Enter Product Name *"
+            placeholder="Product Name *"
           />
 
           <View style={styles.row}>
@@ -109,14 +110,14 @@ const AddProductScreen = ({ navigation }) => {
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
-              placeholder="Enter Price *"
+              placeholder="Price *"
             />
             <TextInput
               style={[styles.input, styles.halfInput]}
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="numeric"
-              placeholder="Enter Qty *"
+              placeholder="Quantity *"
             />
           </View>
 
@@ -124,7 +125,7 @@ const AddProductScreen = ({ navigation }) => {
             style={styles.input}
             value={category}
             onChangeText={setCategory}
-            placeholder="Enter Product Category"
+            placeholder="Category"
           />
         </View>
       </View>
@@ -133,15 +134,15 @@ const AddProductScreen = ({ navigation }) => {
         style={[styles.input, styles.multilineInput]}
         value={details}
         onChangeText={setDetails}
-        placeholder="Enter Product Details"
+        placeholder="Product Description"
         multiline
         numberOfLines={4}
       />
 
       <TouchableOpacity style={styles.saveButton} onPress={saveProduct}>
-        <Text style={styles.saveButtonText}>Save</Text>
+        <Text style={styles.saveButtonText}>Save Product</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -153,62 +154,62 @@ const styles = StyleSheet.create({
   },
   imageDouble: {
     flexDirection: "row",
-    flexWrap: "wrap", // Allow wrapping for smaller screens
     marginBottom: 20,
   },
   formContainer: {
     flex: 1,
-    paddingLeft: 10,
+    paddingLeft: 15,
   },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 5,
+    padding: 12,
+    borderRadius: 8,
     marginBottom: 15,
+    fontSize: 16,
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
   halfInput: {
-    width: "48%", // Ensure inputs are side-by-side on wider screens
+    width: "48%",
   },
   multilineInput: {
-    height: 100,
+    height: 120,
     textAlignVertical: "top",
   },
   imageContainer: {
-    alignItems: "center",
-    marginBottom: 20,
+    width: 150,
   },
   image: {
     width: 150,
     height: 150,
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "#ccc",
   },
   placeholderContainer: {
     width: 150,
     height: 150,
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "#ccc",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#f5f5f5",
   },
   placeholderText: {
     color: "#888",
+    marginTop: 10,
     textAlign: "center",
-    padding: 10,
   },
   saveButton: {
     backgroundColor: "#ff6b6b",
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 8,
     alignItems: "center",
+    marginTop: 10,
   },
   saveButtonText: {
     color: "white",
