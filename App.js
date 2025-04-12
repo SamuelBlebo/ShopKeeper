@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./screens/HomeScreen";
 import AddProductScreen from "./screens/AddProductScreen";
 import ProductDetailScreen from "./screens/ProductDetailScreen";
+import SaleScreen from "./screens/SaleScreen"; // Import SaleScreen
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +27,11 @@ export default function App() {
           name="ProductDetail"
           component={ProductDetailScreen}
           options={{ title: "Product Details" }}
+        />
+        <Stack.Screen
+          name="SaleScreen"
+          component={SaleScreen}
+          options={{ title: "Sale Modal" }} // Add SaleScreen here
         />
       </Stack.Navigator>
     </NavigationContainer>

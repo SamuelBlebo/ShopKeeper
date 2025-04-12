@@ -14,14 +14,17 @@ import { Ionicons } from "@expo/vector-icons";
 const HomeScreen = ({ navigation }) => {
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [saleProducts, setSaleProducts] = useState([]);
+  const [totalQuantity, setTotalQuantity] = useState(0);
+  const [totalCost, setTotalCost] = useState(0);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
-      loadProducts();
+      updateSaleSummary();
     });
 
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, saleProducts]);
 
   const loadProducts = async () => {
     try {
@@ -39,31 +42,55 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const addToSale = (product) => {
+    const existingProduct = saleProducts.find((p) => p.id === product.id);
+    if (existingProduct) {
+      const updatedSaleProducts = saleProducts.map((p) =>
+        p.id === product.id
+          ? { ...p, quantity: p.quantity + 1, cost: p.cost + product.price }
+          : p
+      );
+      setSaleProducts(updatedSaleProducts);
+    } else {
+      setSaleProducts([
+        ...saleProducts,
+        { ...product, quantity: 1, cost: product.price },
+      ]);
+    }
+
+    updateSaleSummary();
+  };
+
+  const updateSaleSummary = () => {
+    const totalQty = saleProducts.reduce(
+      (sum, product) => sum + product.quantity,
+      0
+    );
+    const totalCost = saleProducts.reduce(
+      (sum, product) => sum + product.cost,
+      0
+    );
+
+    setTotalQuantity(totalQty);
+    setTotalCost(totalCost);
+  };
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("ProductDetail", { product: item })}
-    >
-      <View style={styles.productCard}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <View style={styles.infoContainer}>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Price</Text>
-            <Text style={styles.infoValue}>₵{item.price}</Text>
-          </View>
-          <View style={styles.infoBox}>
-            <Text style={styles.infoLabel}>Qty</Text>
-            <Text style={styles.infoValue}>{item.quantity}</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.plusButton}>
-          <Text style={styles.plusButtonText}>+</Text>
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
+    <View style={styles.productRow}>
+      <Text style={styles.productName}>{item.name}</Text>
+      <Text style={styles.productInfo}>Qty: {item.quantity}</Text>
+      <Text style={styles.productInfo}>₵{item.price}</Text>
+      <TouchableOpacity
+        style={styles.plusButton}
+        onPress={() => addToSale(item)}
+      >
+        <Text style={styles.plusButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -116,6 +143,22 @@ const HomeScreen = ({ navigation }) => {
         }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
+
+      <View style={styles.saleFooter}>
+        <TouchableOpacity
+          style={styles.saleButton}
+          onPress={() =>
+            navigation.navigate("SaleScreen", {
+              saleProducts,
+              setSaleProducts,
+            })
+          }
+        >
+          <Text style={styles.saleButtonText}>Sale</Text>
+        </TouchableOpacity>
+        <Text style={styles.totalQuantity}>{totalQuantity}</Text>
+        <Text style={styles.totalCost}>₵{totalCost.toFixed(2)}</Text>
+      </View>
     </View>
   );
 };
@@ -182,38 +225,24 @@ const styles = StyleSheet.create({
     bottom: 10,
     right: 10,
   },
-  productCard: {
+  productRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     backgroundColor: "#eee",
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
   },
   productName: {
-    flex: 1,
     fontSize: 16,
     fontWeight: "bold",
+    flex: 2,
   },
-  infoContainer: {
-    flexDirection: "row",
-    marginRight: 10,
-  },
-  infoBox: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginLeft: 5,
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  infoLabel: {
-    fontSize: 10,
-    color: "#555",
-  },
-  infoValue: {
+  productInfo: {
     fontSize: 14,
-    fontWeight: "bold",
+    flex: 1,
+    textAlign: "center",
   },
   plusButton: {
     backgroundColor: "#ff6b6b",
@@ -231,6 +260,35 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     color: "#888",
+  },
+  saleFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#eee",
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  totalQuantity: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  saleButton: {
+    backgroundColor: "#ff6b6b",
+    padding: 15,
+    borderRadius: 10,
+  },
+  saleButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  totalCost: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
   },
 });
 
