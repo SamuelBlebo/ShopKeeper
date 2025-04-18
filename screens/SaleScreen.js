@@ -49,8 +49,14 @@ const SaleScreen = ({ route, navigation }) => {
         }
       />
       <View style={styles.totalContainer}>
-        <TouchableOpacity style={styles.saleButton}>
-          <Text style={styles.saleButtonText}>Sale</Text>
+        <TouchableOpacity
+          style={styles.saleButton}
+          onPress={() => {
+            setSaleProducts([]); // Clear the saleProducts in HomeScreen
+            navigation.goBack(); // Navigate back to HomeScreen
+          }}
+        >
+          <Text style={styles.saleButtonText}>Sold</Text>
         </TouchableOpacity>
         <Text style={styles.totalText}>GH₵ {calculateTotal().toFixed(2)}</Text>
       </View>

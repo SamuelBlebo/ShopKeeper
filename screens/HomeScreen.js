@@ -20,7 +20,8 @@ const HomeScreen = ({ navigation }) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
-      updateSaleSummary();
+      loadProducts(); // Reload products when the screen regains focus
+      updateSaleSummary(); // Update the sale summary
     });
 
     return unsubscribe;
@@ -80,7 +81,10 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const renderItem = ({ item }) => (
-    <View style={styles.productRow}>
+    <TouchableOpacity
+      style={styles.productRow}
+      onPress={() => navigation.navigate("ProductDetail", { product: item })}
+    >
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productInfo}>Qty: {item.quantity}</Text>
       <Text style={styles.productInfo}>₵{item.price}</Text>
@@ -90,7 +94,7 @@ const HomeScreen = ({ navigation }) => {
       >
         <Text style={styles.plusButtonText}>+</Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
