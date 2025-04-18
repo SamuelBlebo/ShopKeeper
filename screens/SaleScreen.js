@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 const SaleScreen = ({ route, navigation }) => {
-  const { saleProducts, setSaleProducts } = route.params;
+  const { saleProducts, setSaleProducts, handleSaleCompletion } = route.params;
   const [products, setProducts] = useState(saleProducts);
 
   const removeProduct = (id) => {
@@ -52,6 +52,8 @@ const SaleScreen = ({ route, navigation }) => {
         <TouchableOpacity
           style={styles.saleButton}
           onPress={() => {
+            const total = calculateTotal();
+            handleSaleCompletion(total); // Update total sales in HomeScreen
             setSaleProducts([]); // Clear the saleProducts in HomeScreen
             navigation.goBack(); // Navigate back to HomeScreen
           }}

@@ -17,10 +17,12 @@ const HomeScreen = ({ navigation }) => {
   const [saleProducts, setSaleProducts] = useState([]);
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
+  const [totalSales, setTotalSales] = useState(0); // State for total sales
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       loadProducts(); // Reload products when the screen regains focus
+      loadSalesData(); // Load sales data from AsyncStorage
       updateSaleSummary(); // Update the sale summary
     });
 
@@ -40,6 +42,48 @@ const HomeScreen = ({ navigation }) => {
     } catch (e) {
       console.error("Failed to load products", e);
       Alert.alert("Error", "Failed to load products");
+    }
+  };
+
+  const loadSalesData = async () => {
+    try {
+      const salesData = await AsyncStorage.getItem("salesData");
+      const currentDate = new Date().toDateString();
+
+      if (salesData) {
+        const { totalSales: savedSales, lastUpdated } = JSON.parse(salesData);
+
+        // Reset sales if the date has changed
+        if (lastUpdated !== currentDate) {
+          setTotalSales(0);
+          await AsyncStorage.setItem(
+            "salesData",
+            JSON.stringify({ totalSales: 0, lastUpdated: currentDate })
+          );
+        } else {
+          setTotalSales(savedSales);
+        }
+      } else {
+        // Initialize sales data if not present
+        await AsyncStorage.setItem(
+          "salesData",
+          JSON.stringify({ totalSales: 0, lastUpdated: currentDate })
+        );
+      }
+    } catch (e) {
+      console.error("Failed to load sales data", e);
+    }
+  };
+
+  const saveSalesData = async (newTotalSales) => {
+    try {
+      const currentDate = new Date().toDateString();
+      await AsyncStorage.setItem(
+        "salesData",
+        JSON.stringify({ totalSales: newTotalSales, lastUpdated: currentDate })
+      );
+    } catch (e) {
+      console.error("Failed to save sales data", e);
     }
   };
 
@@ -76,6 +120,12 @@ const HomeScreen = ({ navigation }) => {
     setTotalCost(totalCost);
   };
 
+  const handleSaleCompletion = (saleTotal) => {
+    const newTotalSales = totalSales + saleTotal;
+    setTotalSales(newTotalSales); // Update total sales
+    saveSalesData(newTotalSales); // Save the updated sales data
+  };
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -86,7 +136,7 @@ const HomeScreen = ({ navigation }) => {
       onPress={() => navigation.navigate("ProductDetail", { product: item })}
     >
       <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productInfo}>Qty: {item.quantity}</Text>
+      <Text style={styles.productInfo}>{item.quantity}</Text>
       <Text style={styles.productInfo}>₵{item.price}</Text>
       <TouchableOpacity
         style={styles.plusButton}
@@ -114,7 +164,8 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.cardsContainer}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Sales</Text>
-          <Text style={styles.cardAmount}>₵1,500.00</Text>
+          <Text style={styles.cardAmount}>₵{totalSales.toFixed(2)}</Text>
+
           <Text style={styles.cardSubtitle}>Today</Text>
         </View>
 
@@ -155,6 +206,7 @@ const HomeScreen = ({ navigation }) => {
             navigation.navigate("SaleScreen", {
               saleProducts,
               setSaleProducts,
+              handleSaleCompletion, // Pass the handler to SaleScreen
             })
           }
         >
